@@ -261,13 +261,19 @@ class CommonService
             /**
              * @var WalletModel $wallet
              */
-            $balance = app(Storable::class)
+            $$balance = app(Storable::class)
                 ->incBalance($wallet, $amount);
 
             try {
-                $result = $wallet->newQuery()
-                    ->whereKey($wallet->getKey())
-                    ->update(compact('balance'));
+                if ($amount > 0) {
+                    $result = $wallet->newQuery()
+                        ->whereKey($wallet->getKey())
+                        ->increment('balance', $amount);
+                } else {
+                    $result = $wallet->newQuery()
+                        ->whereKey($wallet->getKey())
+                        ->decrement('balance', $amount);
+                }
             } catch (Throwable $throwable) {
                 app(Storable::class)
                     ->setBalance($wallet, $wallet->getAvailableBalance());
